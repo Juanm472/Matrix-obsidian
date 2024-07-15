@@ -1,0 +1,1 @@
+Welcome to my GitHub repository, where I showcase a collection of my academic projects completed during my studies in Systems Engineering. This repository includes a variety of assignments and projects from different courses, reflecting my progress and learning throughout my academic journey.
