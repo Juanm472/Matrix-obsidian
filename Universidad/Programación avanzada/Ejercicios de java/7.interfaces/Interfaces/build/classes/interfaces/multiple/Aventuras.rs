@@ -1,0 +1,6 @@
+interfaces.multiple.Aventuras
+interfaces.multiple.PoderVolar
+interfaces.multiple.PoderNadar
+interfaces.multiple.PoderCorrer
+interfaces.multiple.PersonajeAccion
+interfaces.multiple.Heroe
