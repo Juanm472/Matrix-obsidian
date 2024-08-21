@@ -1,0 +1,8 @@
+Factura
+========
+Nombre del Cliente: Pepe 
+Cédula: 1031804182
+Nombre del Producto: Pepinillos
+Cantidad: 10
+Precio Unitario: $2000
+Total: $20000
