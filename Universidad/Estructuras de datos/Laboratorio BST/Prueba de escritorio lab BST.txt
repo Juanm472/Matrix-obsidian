@@ -1,0 +1,53 @@
+Datos de Entrada:
+
+Inserciones: 50, 25, 75, 15, 35, 65, 85
+Eliminación: Nodo con valor 25
+Prueba de Escritorio Paso a Paso:
+
+Inicialización:
+
+Se inicializa el árbol arbol1 como NULL.
+Inserciones:
+
+Insertar 50:
+arbol1 es NULL, se crea un nuevo nodo con valor 50. arbol1 ahora apunta a este nodo.
+Insertar 25:
+Se compara con 50: 25 < 50, se inserta 25 a la izquierda del nodo 50.
+Insertar 75:
+Se compara con 50: 75 > 50, se inserta 75 a la derecha del nodo 50.
+Insertar 15:
+Se compara con 50: 15 < 50, luego se compara con 25: 15 < 25, se inserta 15 a la izquierda del nodo 25.
+Insertar 35:
+Se compara con 50: 35 < 50, luego se compara con 25: 35 > 25, se inserta 35 a la derecha del nodo 25.
+Insertar 65:
+Se compara con 50: 65 > 50, luego se compara con 75: 65 < 75, se inserta 65 a la izquierda del nodo 75.
+Insertar 85:
+Se compara con 50: 85 > 50, luego se compara con 75: 85 > 75, se inserta 85 a la derecha del nodo 75.
+Recorridos:
+
+Preorden:
+Visita nodo 50, luego recorre el subárbol izquierdo (25 -> 15 -> 35), y luego el subárbol derecho (75 -> 65 -> 85).
+Salida esperada: 50 -> 25 -> 15 -> 35 -> 75 -> 65 -> 85 ->
+Postorden:
+Recorre el subárbol izquierdo (15 -> 35 -> 25), luego el subárbol derecho (65 -> 85 -> 75), y finalmente visita el nodo 50.
+Salida esperada: 15 -> 35 -> 25 -> 65 -> 85 -> 75 -> 50 ->
+Inorden:
+Recorre el subárbol izquierdo en orden (15 -> 25 -> 35), visita el nodo 50, luego recorre el subárbol derecho en orden (65 -> 75 -> 85).
+Salida esperada: 15 -> 25 -> 35 -> 50 -> 65 -> 75 -> 85 ->
+Eliminación del Nodo 25:
+
+Se encuentra el nodo con valor 25. Tiene dos hijos (15 y 35).
+Se reemplaza con el sucesor en orden, que es el nodo con valor 35.
+Se elimina el nodo 35 original.
+Recorrido Inorden después de la Eliminación:
+
+Recorre el árbol resultante: 15 -> 35 -> 50 -> 65 -> 75 -> 85
+Salida esperada: 15 -> 35 -> 50 -> 65 -> 75 -> 85 ->
+
+Salida esperada:
+-PreOrden 50 -> 25 -> 15 -> 35 -> 75 -> 65 -> 85 ->
+-PostOrden 15 -> 35 -> 25 -> 65 -> 85 -> 75 -> 50 ->
+-InOrden 15 -> 25 -> 35 -> 50 -> 65 -> 75 -> 85 ->
+
+Se elimina el nodo(25)
+15 -> 35 -> 50 -> 65 -> 75 -> 85 ->
