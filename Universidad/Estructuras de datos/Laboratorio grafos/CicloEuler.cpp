@@ -1,9 +1,9 @@
-/*<><><><><><><><><><><><><><><>
-Autor: Juan Manuel Lopez 
+/**********************************************
+Autores: David León, Sebastian Mendez, Juan Manuel Lopez, Sebastián Almanza
 Materia: Estructura de Datos
 Fecha 06-11-2024
-Tema: Laboratorio grafos
-<><><><><><><><><><><><><><><>*/
+Tema: Laboratorio grafos - ciclo de euler
+***********************************************/
 
 #include <iostream>
 #include <vector>
@@ -35,7 +35,7 @@ void findEulerianCycle(Graph &graph, int start) {
     while (!path.empty()) {
         int u = path.top();
         bool foundEdge = false;
-        
+
         for (auto &edge : graph[u]) {
             if (!edge.used) {
                 edge.used = true;
