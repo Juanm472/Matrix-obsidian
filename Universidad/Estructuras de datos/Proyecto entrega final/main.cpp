@@ -37,7 +37,7 @@
 #include <algorithm>
 #include "kdtree.h"
 #include "vertice.h"
-
+#include <queue>
 using namespace std;
 
 struct Cara {
@@ -220,17 +220,101 @@ void encontrarVerticeCercanoGlobal(const vector<Malla>& mallas, const Vertice& p
          << " a una distancia de " << mejorDistancia << ".\n";
 }
 
-// Función para calcular la ruta más corta entre dos vértices en la malla
+// Función para calcular la distancia entre dos vértices
+double calcularDistancia(const Vertice& v1, const Vertice& v2) {
+    return sqrt(pow(v2.px - v1.px, 2) + pow(v2.py - v1.py, 2) + pow(v2.pz - v1.pz, 2));
+}
+
+// Función para calcular la ruta más corta entre dos vértices en la malla usando Dijkstra
 void calcularRutaCorta(int i1, int i2, const Malla& malla) {
-    // Aquí puedes implementar el cálculo de la ruta corta entre los vértices i1 e i2.
-    cout << "Calculando la ruta más corta entre los vértices " << i1 << " y " << i2 << " de " << malla.nombre << ".\n";
+    int n = malla.vertices.size();
+    vector<double> distancias(n, numeric_limits<double>::infinity());
+    vector<int> padres(n, -1);
+    priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
+
+    distancias[i1] = 0;
+    pq.push({0, i1});
+
+    while (!pq.empty()) {
+        int u = pq.top().second;
+        pq.pop();
+
+        // Si hemos llegado al vértice de destino, terminamos
+        if (u == i2) break;
+
+        // Recorremos los vecinos (vértices conectados por caras)
+        for (const auto& cara : malla.caras) {
+            if (find(cara.indicesVertices.begin(), cara.indicesVertices.end(), u) != cara.indicesVertices.end()) {
+                for (int v : cara.indicesVertices) {
+                    if (v != u) {
+                        double distancia = calcularDistancia(malla.vertices[u], malla.vertices[v]);
+                        if (distancias[u] + distancia < distancias[v]) {
+                            distancias[v] = distancias[u] + distancia;
+                            padres[v] = u;
+                            pq.push({distancias[v], v});
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // Mostrar el resultado de la ruta más corta
+    if (distancias[i2] != numeric_limits<double>::infinity()) {
+        cout << "La distancia mas corta entre los vertices " << i1 << " y " << i2 << " es " << distancias[i2] << ".\n";
+
+        // Mostrar el camino
+        vector<int> camino;
+        for (int v = i2; v != -1; v = padres[v]) {
+            camino.push_back(v);
+        }
+        reverse(camino.begin(), camino.end());
+        cout << "El camino más corto es: ";
+        for (int v : camino) {
+            cout << v << " ";
+        }
+        cout << endl;
+    } else {
+        cout << "No se pudo encontrar un camino entre los vertices " << i1 << " y " << i2 << ".\n";
+    }
 }
 
 // Función para calcular la ruta más corta entre un vértice y el centro de la malla
 void calcularRutaCortaCentro(int i1, const Malla& malla) {
-    // Aquí puedes implementar el cálculo de la ruta corta desde el vértice i1 hasta el centro de la malla.
-    cout << "Calculando la ruta más corta entre el vértice " << i1 << " y el centro de " << malla.nombre << ".\n";
+    int n = malla.vertices.size();
+    if (n == 0) {
+        cout << "La malla esta vacia.\n";
+        return;
+    }
+
+    // Calcular el centro de la malla (promediando las coordenadas de los vértices)
+    double cx = 0, cy = 0, cz = 0;
+    for (const auto& v : malla.vertices) {
+        cx += v.px;
+        cy += v.py;
+        cz += v.pz;
+    }
+    cx /= n;
+    cy /= n;
+    cz /= n;
+
+    Vertice centro(cx, cy, cz);
+
+    // Calcular la ruta más corta entre el vértice i1 y el centro
+    int i2 = -1;
+    double minDist = numeric_limits<double>::infinity();
+    for (int i = 0; i < malla.vertices.size(); ++i) {
+        double dist = calcularDistancia(malla.vertices[i], centro);
+        if (dist < minDist) {
+            minDist = dist;
+            i2 = i;
+        }
+    }
+
+    cout << "La ruta más corta desde el vértice " << i1 << " hasta el centro de la malla es a través del vértice " << i2
+         << " con una distancia de " << minDist << ".\n";
 }
+
 void mostrarAyuda(const string& comando) {
     if (comando == "cargar") {
         cout << "Comando 'cargar':\n"
@@ -282,9 +366,9 @@ int main() {
     cout << "2. guardar <nombre_malla> <archivo>          - Guarda una malla en un archivo." << endl;
     cout << "3. listado                                   - Lista todas las mallas cargadas." << endl;
     cout << "4. envolvente <nombre_malla>                 - Calcula la caja envolvente de una malla." << endl;
-    cout << "5. envolvente global                         - Calcula la caja envolvente global de todos los objetos." << endl;
+    cout << "5. envolvente                                - Calcula la caja envolvente global de todos los objetos." << endl;
     cout << "6. v_cercano <px> <py> <pz> <nombre_malla>   - Encuentra el vertice mas cercano a un punto." << endl;
-    cout << "7. v_cercano <px> <py> <pz> global           - Encuentra el vertice mas cercano globalmente." << endl;
+    cout << "7. v_cercano <px> <py> <pz>                  - Encuentra el vertice mas cercano globalmente." << endl;
     cout << "8. descargar <nombre_malla>                  - Elimina una malla cargada de la memoria." << endl;
     cout << "9. ruta_corta_centro i1 nombre_objeto        - Calcula la ruta corta desde el vertice i1 hasta el centro." << endl;
     cout << "10. ruta_corta i1 i2 nombre_objeto           - Calcula la ruta corta entre los vertices i1 e i2." << endl;
@@ -331,18 +415,26 @@ int main() {
             Malla cajaGlobal = calcularEnvolventeGlobal(mallas, "env_global");
             mallas.push_back(cajaGlobal);
         } else if (accion == "v_cercano" && partes.size() == 5) {
-            float px = stof(partes[1]);
-            float py = stof(partes[2]);
-            float pz = stof(partes[3]);
-            string nombreMalla = partes[4];
+    float px = stof(partes[1]);
+    float py = stof(partes[2]);
+    float pz = stof(partes[3]);
+    string nombreMalla = partes[4];
 
-            auto it = find_if(mallas.begin(), mallas.end(), [&](const Malla& m) { return m.nombre == nombreMalla; });
-            if (it != mallas.end()) {
-                Vertice punto(px, py, pz);
-                encontrarVerticeCercano(*it, punto);
-            } else {
-                cout << "El objeto " << partes[4] << " no ha sido cargado en memoria.\n";
-            }
+    if (nombreMalla == "global") {
+        // Búsqueda global en todas las mallas cargadas
+        Vertice punto(px, py, pz);
+        encontrarVerticeCercanoGlobal(mallas, punto);
+    } else {
+        // Búsqueda específica en una malla
+        auto it = find_if(mallas.begin(), mallas.end(), [&](const Malla& m) { return m.nombre == nombreMalla; });
+        if (it != mallas.end()) {
+            Vertice punto(px, py, pz);
+            encontrarVerticeCercano(*it, punto);
+        } else {
+            cout << "El objeto " << partes[4] << " no ha sido cargado en memoria.\n";
+        }
+    }
+
         } else if (accion == "v_cercano" && partes.size() == 4) {
             float px = stof(partes[1]);
             float py = stof(partes[2]);
@@ -388,4 +480,3 @@ int main() {
 
     return 0;
 }
-

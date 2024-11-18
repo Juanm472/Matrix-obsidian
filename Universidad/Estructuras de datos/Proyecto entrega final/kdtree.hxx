@@ -44,4 +44,3 @@ template<class T>
 void kdnodo<T>::fijarTag(int value) {
     tag = value;
 }
-

@@ -1,100 +1,99 @@
 #ifndef KDTREE_H
 #define KDTREE_H
 
-#include <cmath>
+#include <vector>
 #include <limits>
-#include "vertice.h"
+#include <cmath>  // Asegúrate de incluir cmath para funciones matemáticas como sqrt, pow, fabs
+#include <algorithm>
 
-template<class T>
-class kdnodo {
-private:
-    T dato;
-    kdnodo<T>* hijoIzq;
-    kdnodo<T>* hijoDer;
-    int tag;  // 0: X, 1: Y, 2: Z
-
-public:
-    kdnodo() : hijoIzq(nullptr), hijoDer(nullptr), tag(0) {}
-    T& obtenerDato() { return dato; }
-    void fijarDato(const T& val) { dato = val; }
-    kdnodo<T>* obtenerHijoIzq() { return hijoIzq; }
-    kdnodo<T>* obtenerHijoDer() { return hijoDer; }
-    void fijarHijoIzq(kdnodo<T>* izq) { hijoIzq = izq; }
-    void fijarHijoDer(kdnodo<T>* der) { hijoDer = der; }
-    int obtenerTag() { return tag; }
-    void fijarTag(int value) { tag = value; }
-};
-
-template<class T>
+template <typename T>
 class kdtree {
+public:
+    struct Nodo {
+        T punto;
+        Nodo* izquierda;
+        Nodo* derecha;
+
+        Nodo(const T& p) : punto(p), izquierda(nullptr), derecha(nullptr) {}
+    };
+
 private:
-    kdnodo<T>* raiz;
+    Nodo* raiz;
 
-    kdnodo<T>* insertarRecursivo(kdnodo<T>* nodo, T dato, int profundidad) {
-        if (nodo == nullptr) {
-            nodo = new kdnodo<T>();
-            nodo->fijarDato(dato);
-            nodo->fijarTag(profundidad % 3);  // Ciclo: X -> Y -> Z
-            return nodo;
-        }
+    // Modificado para ser 'const', ya que no debe modificar el árbol.
+    Nodo* insertar(Nodo* nodo, const T& punto) const {
+        if (nodo == nullptr) return new Nodo(punto);
+        
+        // Calcular el eje de división
+        int eje = obtenerEje(nodo->punto, punto);
 
-        int tag = nodo->obtenerTag();
-        if ((tag == 0 && dato.px < nodo->obtenerDato().px) ||
-            (tag == 1 && dato.py < nodo->obtenerDato().py) ||
-            (tag == 2 && dato.pz < nodo->obtenerDato().pz)) {
-            nodo->fijarHijoIzq(insertarRecursivo(nodo->obtenerHijoIzq(), dato, profundidad + 1));
-        } else {
-            nodo->fijarHijoDer(insertarRecursivo(nodo->obtenerHijoDer(), dato, profundidad + 1));
-        }
+        if (obtenerCoordenada(punto, eje) < obtenerCoordenada(nodo->punto, eje))
+            nodo->izquierda = insertar(nodo->izquierda, punto);
+        else
+            nodo->derecha = insertar(nodo->derecha, punto);
+
         return nodo;
     }
 
-    T encontrarMasCercanoRecursivo(kdnodo<T>* nodo, const T& objetivo, int profundidad, double& mejorDistancia, T mejor) const {
-        if (nodo == nullptr) return mejor;
+    int obtenerEje(const T& a, const T& b) const {
+        if (a.px != b.px) return 0;  // Dividir según el eje X
+        if (a.py != b.py) return 1;  // Dividir según el eje Y
+        return 2;  // Dividir según el eje Z
+    }
 
-        T puntoActual = nodo->obtenerDato();
-        double distanciaActual = puntoActual.distancia(objetivo);
-
-        if (distanciaActual < mejorDistancia) {
-            mejorDistancia = distanciaActual;
-            mejor = puntoActual;
-        }
-
-        int tag = nodo->obtenerTag();
-        kdnodo<T>* ladoPrimario = (tag == 0 && objetivo.px < puntoActual.px) ||
-                                  (tag == 1 && objetivo.py < puntoActual.py) ||
-                                  (tag == 2 && objetivo.pz < puntoActual.pz)
-                                  ? nodo->obtenerHijoIzq() : nodo->obtenerHijoDer();
-
-        kdnodo<T>* ladoSecundario = ladoPrimario == nodo->obtenerHijoIzq() ? nodo->obtenerHijoDer() : nodo->obtenerHijoIzq();
-
-        mejor = encontrarMasCercanoRecursivo(ladoPrimario, objetivo, profundidad + 1, mejorDistancia, mejor);
-
-        double distanciaPlano = (tag == 0) ? fabs(objetivo.px - puntoActual.px) :
-                              (tag == 1) ? fabs(objetivo.py - puntoActual.py) :
-                                           fabs(objetivo.pz - puntoActual.pz);
-
-        if (distanciaPlano < mejorDistancia) {
-            mejor = encontrarMasCercanoRecursivo(ladoSecundario, objetivo, profundidad + 1, mejorDistancia, mejor);
-        }
-
-        return mejor;
+    double obtenerCoordenada(const T& punto, int eje) const {
+        if (eje == 0) return punto.px;
+        if (eje == 1) return punto.py;
+        return punto.pz;
     }
 
 public:
     kdtree() : raiz(nullptr) {}
 
-    void insertar(T dato) {
-        raiz = insertarRecursivo(raiz, dato, 0);
+    void insertar(const T& punto) {
+        raiz = insertar(raiz, punto);
     }
 
-    T encontrarMasCercano(const T& objetivo, double& mejorDistancia) const {
-        if (raiz == nullptr) {
-            throw std::runtime_error("El árbol está vacío.");
+    // Cambiado para 'const' debido a que se está llamando desde un objeto 'const'
+    T encontrarMasCercano(const T& punto, double& mejorDistancia) const {
+        return encontrarMasCercano(raiz, punto, mejorDistancia);
+    }
+
+    // Cambiado a 'const' para que no modifique el estado del árbol
+    T encontrarMasCercano(const Nodo* nodo, const T& punto, double& mejorDistancia) const {
+        if (nodo == nullptr) return T();
+
+        double distancia = punto.distancia(nodo->punto);
+        if (distancia < mejorDistancia) {
+            mejorDistancia = distancia;
+            return nodo->punto;
         }
-        return encontrarMasCercanoRecursivo(raiz, objetivo, 0, mejorDistancia, raiz->obtenerDato());
+
+        int eje = obtenerEje(nodo->punto, punto);
+        const Nodo* primerBusqueda = nullptr;
+        const Nodo* segundoBusqueda = nullptr;
+
+        if (obtenerCoordenada(punto, eje) < obtenerCoordenada(nodo->punto, eje)) {
+            primerBusqueda = nodo->izquierda;
+            segundoBusqueda = nodo->derecha;
+        } else {
+            primerBusqueda = nodo->derecha;
+            segundoBusqueda = nodo->izquierda;
+        }
+
+        // Buscar en el primer nodo
+        T mejor = encontrarMasCercano(primerBusqueda, punto, mejorDistancia);
+
+        // Si la distancia mínima ya es más pequeña que la diferencia en el eje, buscar en el otro nodo
+        if (fabs(obtenerCoordenada(punto, eje) - obtenerCoordenada(nodo->punto, eje)) < mejorDistancia) {
+            T posibleMejor = encontrarMasCercano(segundoBusqueda, punto, mejorDistancia);
+            if (posibleMejor.distancia(punto) < mejorDistancia) {
+                mejor = posibleMejor;
+            }
+        }
+
+        return mejor;
     }
 };
 
-#endif // KDTREE_H
-
+#endif  // KDTREE_H

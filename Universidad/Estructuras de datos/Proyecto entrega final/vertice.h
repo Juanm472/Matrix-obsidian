@@ -1,26 +1,28 @@
 #ifndef VERTICE_H
 #define VERTICE_H
 
-#include <cmath>
-#include <iostream>
+#include <iostream>  // Asegúrate de incluir iostream para std::ostream
 
-struct Vertice {
-    float px, py, pz;
+class Vertice {
+public:
+    float px, py, pz;  // Coordenadas del vértice
 
-    Vertice() : px(0), py(0), pz(0) {}
-    Vertice(float x, float y, float z) : px(x), py(y), pz(z) {}
+    // Constructor
+    Vertice(float x = 0, float y = 0, float z = 0) : px(x), py(y), pz(z) {}
 
-    // Calcular distancia euclidiana entre dos vértices
-    float distancia(const Vertice& otro) const {
+    // Sobrecarga del operador de salida para imprimir el vértice
+    friend std::ostream& operator<<(std::ostream& os, const Vertice& v);
+
+    // Método para calcular la distancia entre dos vértices
+    double distancia(const Vertice& otro) const {
         return sqrt(pow(px - otro.px, 2) + pow(py - otro.py, 2) + pow(pz - otro.pz, 2));
-    }
-
-    // Sobrecarga del operador << para imprimir vértices
-    friend std::ostream& operator<<(std::ostream& os, const Vertice& v) {
-        os << "(" << v.px << ", " << v.py << ", " << v.pz << ")";
-        return os;
     }
 };
 
-#endif // VERTICE_H
+// Sobrecarga del operador de salida
+std::ostream& operator<<(std::ostream& os, const Vertice& v) {
+    os << "(" << v.px << ", " << v.py << ", " << v.pz << ")";
+    return os;
+}
 
+#endif  // VERTICE_H

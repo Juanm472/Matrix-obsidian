@@ -1,4 +1,4 @@
-malla_de_un_cubo
+malla_cubo
 8
 0 0 0
 1 0 0
