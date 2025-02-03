@@ -1,0 +1,73 @@
+---
+title: "Tarea 1"
+author: "Juan Manuel López"
+date: "2025-02-03"
+output:
+  word_document: default
+  pdf_document: default
+---
+
+# Cargar Librerías
+
+```{r message=FALSE, warning=FALSE}
+if (!require("readxl")) install.packages("readxl", dependencies = TRUE)
+if (!require("ggplot2")) install.packages("ggplot2", dependencies = TRUE)
+
+library(readxl)
+library(ggplot2)
+```
+
+# Cargar datos
+
+```{r}
+archivo <- "D:/Programas.xlsx"
+Programas <- read_excel(archivo)
+head(Programas)
+```
+
+# Crear tabla de frecuencias
+
+```{r message=FALSE, warning=FALSE}
+tabla_frecuencias <- table(Programas$`pr.televi`)
+df_frecuencias <- as.data.frame(tabla_frecuencias)
+colnames(df_frecuencias) <- c("Programa", "Frecuencia")
+df_frecuencias
+```
+
+# Calcular porcentajes
+
+```{r}
+df_frecuencias$Porcentaje <- df_frecuencias$Frecuencia / sum(df_frecuencias$Frecuencia) * 100
+```
+
+# Definir los colores personalizados
+
+```{r}
+colores_personalizados <- c("#E63946", "#F4A261", "#2A9D8F", "#264653")
+```
+
+# crear gráfico de barras
+
+```{r}
+ggplot(df_frecuencias, aes(x = Programa, y = Frecuencia, fill = Programa)) +
+  geom_bar(stat = "identity") +
+  theme_minimal() +
+  labs(title = "Frecuencia de Programas de TV", x = "Programa", y = "Frecuencia") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_manual(values = colores_personalizados) +
+  geom_text(aes(label = paste0(round(Porcentaje, 1), "%")), 
+            position = position_stack(vjust = 0.1), color = "white")
+```
+
+# Crear gráfico Circular
+
+```{r}
+ggplot(df_frecuencias, aes(x = "", y = Frecuencia, fill = Programa)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  theme_void() +
+  labs(title = "Distribucion de Programas de TV") +
+  scale_fill_manual(values = colores_personalizados) +
+  geom_text(aes(label = paste0(round(Porcentaje, 1), "%")), 
+            position = position_stack(vjust = 0.5), color = "white")
+```
